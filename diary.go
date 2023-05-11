@@ -28,20 +28,14 @@ func addDiaryEntry(db *gorm.DB, c *gin.Context) {
 func getDiaryEntry(db *gorm.DB, c *gin.Context) {
 	id := c.Param("ID")
 
-	var diaries []DiaryEntry
+	var diary []DiaryEntry
 
-	//err not working
-	if err := db.First(&diaries, id).Error; err != nil {
+	if err := db.First(&diary,id).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get entries"})
 		return
 	}
 
-	if err := db.Where("ID = ?", id).Find(&diaries).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get entries"})
-		return
-	}
-
-	c.JSON(http.StatusOK, diaries)
+	c.JSON(http.StatusOK, diary)
 }
 
 func updateDiaryEntry(db *gorm.DB, c *gin.Context) {

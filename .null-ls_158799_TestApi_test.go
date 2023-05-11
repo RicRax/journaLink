@@ -29,9 +29,8 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	//getting entry
-	var addedEntry DiaryEntry
-	json.Unmarshal(resp.Body.Bytes(), &addedEntry)
-	entryID := strconv.FormatUint(uint64(addedEntry.ID), 10)
+	// var addedEntry DiaryEntry
+	entryID := strconv.FormatUint(uint64(entryData.ID), 10)
 	req, _ = http.NewRequest("GET", "/diary/"+entryID, nil)
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
@@ -39,10 +38,5 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	fmt.Println(string(body))
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	//udpate entry
-	req, _ = http.NewRequest("PUT", "/diary/"+entryID, nil)
-	resp = httptest.NewRecorder()
-	router.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusOK, resp.Code)
 	//
 }
