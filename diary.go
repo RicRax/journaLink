@@ -8,7 +8,7 @@ import (
 )
 
 type DiaryEntry struct {
-	gorm.Model
+	ID    int    `json:"ID"`
 	Title string `json:"title"`
 	Body  string `json:"body"`
 }
@@ -68,6 +68,7 @@ func updateDiaryEntry(db *gorm.DB, c *gin.Context) {
 
 func deleteDiaryEntry(db *gorm.DB, c *gin.Context) {
 	id := c.Param("id")
+
 	if err := db.Delete(&DiaryEntry{}, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Diary entry not found"})
 		fmt.Println(err)
