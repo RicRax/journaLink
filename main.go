@@ -11,7 +11,7 @@ func main() {
 
 	r := setupRouter()
 
-	r.Run(":8010")
+	r.Run(":8080")
 
 }
 
@@ -37,6 +37,10 @@ func setupRouter() *gin.Engine {
 
 	r.PUT("/diary/:id", func(c *gin.Context) {
 		updateDiaryEntry(db, c)
+	})
+
+	r.DELETE("/diary/:id", func(c *gin.Context) {
+		deleteDiaryEntry(db, c)
 	})
 
 	return r
