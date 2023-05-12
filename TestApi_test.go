@@ -21,7 +21,6 @@ func TestAddGetUpdateDiary(t *testing.T) {
 		Body:  "This is a test diary entry.",
 	}
 	entryJSON, _ := json.Marshal(entryData)
-
 	resp := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/diary", bytes.NewBuffer(entryJSON))
 	router.ServeHTTP(resp, req)
@@ -46,5 +45,4 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
-	//
 }

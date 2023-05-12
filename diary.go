@@ -1,7 +1,7 @@
 package main
 
 import (
-  "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
 )
@@ -30,7 +30,7 @@ func getDiaryEntry(db *gorm.DB, c *gin.Context) {
 
 	var diary []DiaryEntry
 
-	if err := db.First(&diary,id).Error; err != nil {
+	if err := db.First(&diary, id).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get entries"})
 		return
 	}
@@ -60,10 +60,11 @@ func updateDiaryEntry(db *gorm.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": entry})
 }
 
-func deleteDiaryEntry(c *gin.Context) {
-	// id := c.Param("id")
+func deleteDiaryEntry(db *gorm.DB, c *gin.Context) {
+	id := c.Param("id")
+	if err := db.Delete(&DiaryEntry{}, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Diary entry not found"})
+	}
 
-	// TODO: Add code to delete the diary entry with the specified ID from the database
-
-	c.JSON(http.StatusOK, gin.H{"message": "Diary entry deleted"})
+	c.JSON(http.StatusOK, gin.H{"message": "Diary entry with id " + id + " deleted"})
 }
