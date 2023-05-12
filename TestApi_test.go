@@ -39,9 +39,10 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	//udpate entry
-	modifiedEntry := DiaryEntry{Title: "Modified", Body: "Modified body"}
+  modifiedEntry := DiaryEntry{Title: "Modified", Body: "Modified body"}
+  modifiedEntry.ID = addedEntry.ID
 	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
-	req, _ = http.NewRequest("PUT", "/diary/"+entryID, bytes.NewBuffer(modifiedEntryJSON))
+  req, _ = http.NewRequest("PUT", "/diary/"+ entryID, bytes.NewBuffer(modifiedEntryJSON))
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
