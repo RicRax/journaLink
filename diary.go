@@ -5,34 +5,47 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
-	"strconv"
 )
 
-type DiaryEntry struct {
+type Diary struct {
 	gorm.Model
-	Title string `json:"title"`
-	Body  string `json:"body"`
+	OwnerID int    `json:"ownerID"`
+	Title   string `json:"title"`
+	Body    string `json:"body"`
 }
 
-func addDiaryEntry(db *gorm.DB, c *gin.Context) {
-	var entry DiaryEntry
-	if err := c.ShouldBindJSON(&entry); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
-		fmt.Println(err)
+type DiaryAccess struct {
+	FK_Diary int    `json:"diaryID"`
+	FK_User  string `json:"sharedUserID"`
+}
+
+func addDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
+	var diary Diary
+
+	if diary.Title = info.Title; info.Title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing Title"})
+		fmt.Println("missing Title")
 		return
 	}
-	if err := db.Create(&entry).Error; err != nil {
+
+	if diary.OwnerID = info.OwnerID; info.OwnerID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing OwnerID"})
+		fmt.Println("missing OwnerID")
+		return
+	}
+
+	if err := db.Create(&diary).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to create entry"})
 		fmt.Println(err)
 		return
 	}
-	c.JSON(http.StatusOK, entry)
+	c.JSON(http.StatusOK, diary)
 }
 
-func getDiaryEntry(db *gorm.DB, c *gin.Context) {
+func getDiary(db *gorm.DB, c *gin.Context) {
 	id := c.Param("id")
 
-	var diary DiaryEntry
+	var diary Diary
 
 	if err := db.First(&diary, id).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get entries"})
@@ -43,40 +56,36 @@ func getDiaryEntry(db *gorm.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, diary)
 }
 
-func updateDiaryEntry(db *gorm.DB, c *gin.Context) {
-	var checkEntry DiaryEntry
-	var submittedEntry DiaryEntry
-	entryID := c.Param("id")
+func updateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
+	var entryID int
 
-	if err := c.ShouldBindJSON(&submittedEntry); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"wrong body format": err.Error()})
-		fmt.Println(err)
+	if entryID = info.DiaryID; info.DiaryID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing DiaryID"})
+		fmt.Println("missing DiaryID")
 		return
 	}
 
+	var checkDiary Diary
+
 	// Find the diary entry with the given ID
-	if err := db.Where("ID = ?", entryID).First(&checkEntry).Error; err != nil {
+	if err := db.Where("ID = ?", entryID).First(&checkDiary).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Diary entry not found"})
 		fmt.Println(err)
 		return
 	}
 
-	intEntryID, _ := strconv.Atoi(entryID)
-	if submittedEntry.ID != uint(intEntryID) {
-		c.JSON(http.StatusBadRequest, gin.H{"erro": "ID of submitted entry does not correspond to path ID"})
-		return
-	}
 	// Update the diary entry with the new data
-	db.Save(&submittedEntry)
+	db.Model(&Diary{}).Where("ID = ?", info.DiaryID).Update("Body", info.Body)
 
-	c.JSON(http.StatusOK, gin.H{"data": submittedEntry})
+	// Return the updated diary
+	db.First(&checkDiary, info.DiaryID)
+	c.JSON(http.StatusOK, gin.H{"data": checkDiary})
 }
 
-func deleteDiaryEntry(db *gorm.DB, c *gin.Context) {
-	//assert that posted ID is equal to path ID
+func deleteDiary(db *gorm.DB, c *gin.Context) {
 	id := c.Param("id")
 
-	if err := db.Delete(&DiaryEntry{}, id).Error; err != nil {
+	if err := db.Delete(&Diary{}, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Diary entry not found"})
 		fmt.Println(err)
 		return

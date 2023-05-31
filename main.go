@@ -1,11 +1,20 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"net/http"
 )
+
+type DiaryInfo struct {
+	OwnerID int
+	DiaryID int
+	Title   string
+	Body    string
+	Shared  [10]string
+}
 
 func main() {
 
@@ -25,22 +34,40 @@ func setupRouter() *gin.Engine {
 		panic("failed to connect to database")
 	}
 
-	db.AutoMigrate(&DiaryEntry{})
+	db.AutoMigrate(&Diary{})
 
+	//diary endpoints
 	r.POST("/diary", func(c *gin.Context) {
-		addDiaryEntry(db, c)
+
+		var info DiaryInfo
+		if err := c.ShouldBindJSON(&info); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+			fmt.Println(err)
+			return
+		}
+
+		if info.DiaryID != 0 && info.Body != "" {
+			updateDiary(db, info, c)
+		} else {
+			addDiary(db, info, c)
+		}
 	})
 
 	r.GET("/diary/:id", func(c *gin.Context) {
-		getDiaryEntry(db, c)
-	})
-
-	r.PUT("/diary/:id", func(c *gin.Context) {
-		updateDiaryEntry(db, c)
+		getDiary(db, c)
 	})
 
 	r.DELETE("/diary/:id", func(c *gin.Context) {
-		deleteDiaryEntry(db, c)
+		deleteDiary(db, c)
+	})
+
+	//user endpoints
+	r.GET("/users/{id}", func(c *gin.Context) {
+		getUser(db, c)
+	})
+
+	r.POST("/users", func(c *gin.Context) {
+		addUser(db, c)
 	})
 
 	return r
