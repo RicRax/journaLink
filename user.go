@@ -44,4 +44,3 @@ func getUser(db *gorm.DB, c *gin.Context) {
 
 	c.JSON(http.StatusOK, user)
 }
-

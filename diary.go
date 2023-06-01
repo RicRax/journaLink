@@ -56,6 +56,18 @@ func getDiary(db *gorm.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, diary)
 }
 
+func getAllSharedDiaries(db *gorm.DB, c *gin.Context) {
+	userID := c.Param("ID")
+
+	var sharedDiaries []Diary
+	if err := db.First(&sharedDiaries, "FK_User = ?", userID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get entry"})
+	}
+
+	c.JSON(http.StatusOK, sharedDiaries)
+
+}
+
 func updateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 	var entryID int
 

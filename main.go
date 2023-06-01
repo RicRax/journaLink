@@ -36,6 +36,11 @@ func setupRouter() *gin.Engine {
 
 	db.AutoMigrate(&Diary{}, &DiaryAccess{})
 
+	//OAuth2 routes
+	r.GET("/oauth/redirect", func(c *gin.Context) {
+		handleOAuth(db, c)
+	})
+
 	//diary endpoints
 	r.POST("/diary", func(c *gin.Context) {
 
@@ -55,6 +60,10 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/diary/:id", func(c *gin.Context) {
 		getDiary(db, c)
+	})
+
+	r.GET("/diary/shared", func(c *gin.Context) {
+		getAllSharedDiaries(db, c)
 	})
 
 	r.DELETE("/diary/:id", func(c *gin.Context) {
