@@ -74,12 +74,28 @@ func updateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 		return
 	}
 
-	// Update the diary entry with the new data
+	// Update the diary entry body with the new data
 	db.Model(&Diary{}).Where("ID = ?", info.DiaryID).Update("Body", info.Body)
+
+	//Update Access table if necessary using Shared field
+	var access DiaryAccess
+	access.FK_Diary = info.DiaryID
+	if info.Shared != nil {
+		for i := 0; i < len(info.Shared); i++ {
+			access.FK_User = info.Shared[i]
+			if err := db.Create(&access).Error; err != nil {
+				c.JSON(http.StatusBadRequest, "failed to create access")
+				return
+			}
+		}
+	}
 
 	// Return the updated diary
 	db.First(&checkDiary, info.DiaryID)
-	c.JSON(http.StatusOK, gin.H{"data": checkDiary})
+	var checkAccess DiaryAccess
+	db.First(&checkAccess)
+	println(checkDiary.ID)
+	c.JSON(http.StatusOK, gin.H{"udpatedDiary": checkDiary, "newAccesses": checkAccess})
 }
 
 func deleteDiary(db *gorm.DB, c *gin.Context) {

@@ -45,6 +45,3 @@ func getUser(db *gorm.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func mapUserToDiary(user User, diary Diary) {
-	userDiaryMap[int(user.ID)] = int(diary.ID)
-}

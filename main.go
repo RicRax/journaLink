@@ -13,7 +13,7 @@ type DiaryInfo struct {
 	DiaryID int
 	Title   string
 	Body    string
-	Shared  [10]string
+	Shared  []string
 }
 
 func main() {
@@ -34,7 +34,7 @@ func setupRouter() *gin.Engine {
 		panic("failed to connect to database")
 	}
 
-	db.AutoMigrate(&Diary{})
+	db.AutoMigrate(&Diary{}, &DiaryAccess{})
 
 	//diary endpoints
 	r.POST("/diary", func(c *gin.Context) {
@@ -46,7 +46,7 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		if info.DiaryID != 0 && info.Body != "" {
+		if info.DiaryID != 0 {
 			updateDiary(db, info, c)
 		} else {
 			addDiary(db, info, c)

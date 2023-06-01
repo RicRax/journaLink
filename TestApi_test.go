@@ -12,14 +12,15 @@ import (
 	"testing"
 )
 
+
+
 func TestAddGetUpdateDiary(t *testing.T) {
 	router := setupRouter()
 
 	//adding diary
 	entryData := Diary{
 		Title:   "Test Entry",
-		OwnerID: 1,
-		Body:    "This is a test diary entry.",
+		OwnerID: 1, Body:    "This is a test diary entry.",
 	}
 	entryJSON, _ := json.Marshal(entryData)
 	resp := httptest.NewRecorder()
@@ -40,11 +41,11 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	//udpate entry
-	// modifiedEntry := Diary{Title: "Modified", Body: "Modified body"}
-	// modifiedEntry.ID = addedEntry.ID
-	// modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
-	// req, _ = http.NewRequest("PUT", "/diary/"+entryID, bytes.NewBuffer(modifiedEntryJSON))
-	// resp = httptest.NewRecorder()
-	// router.ServeHTTP(resp, req)
-	// assert.Equal(t, http.StatusOK, resp.Code)
+  modifiedEntry := DiaryInfo{DiaryID: 1,Title: "Test Entry", Body: "Modified body", Shared: []string {"Riccardo","Paolo"} }
+	modifiedEntry.DiaryID = int(addedEntry.ID)
+	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
+	req, _ = http.NewRequest("POST", "/diary", bytes.NewBuffer(modifiedEntryJSON))
+	resp = httptest.NewRecorder()
+	router.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
 }
