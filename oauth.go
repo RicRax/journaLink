@@ -3,22 +3,27 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 const clientID = "03178089f0ff2ea0356d"
 
-
-type OAuthAccessResponse struct {
+type oAuthAccessResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
 func handleOAuth(db *gorm.DB, c *gin.Context) {
 	code := c.Query("code")
 
-	reqURL := fmt.Sprintf("https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s&code=%s", clientID, cs, code)
+	reqURL := fmt.Sprintf(
+		"https://github.com/login/oauth/access_token?client_id=%s&client_secret=%s&code=%s",
+		clientID,
+		cs,
+		code,
+	)
 
 	req, err := http.NewRequest(http.MethodPost, reqURL, nil)
 	if err != nil {
@@ -45,6 +50,8 @@ func handleOAuth(db *gorm.DB, c *gin.Context) {
 		fmt.Print("could not parse JSON response")
 		c.JSON(http.StatusBadRequest, "error could not parse JSON response")
 		return
-
-  }
 	}
+
+	// AuthResponse.AccessToken
+	c.Redirect(http.StatusFound, "/welcome.html?access_token="+AuthResponse.AccessToken)
+}

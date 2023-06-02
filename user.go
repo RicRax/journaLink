@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
+// User model for database
 type User struct {
 	gorm.Model
 	Username string `json:"username"`

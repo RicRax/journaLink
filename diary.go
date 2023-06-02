@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
+// Diary Model for database
 type Diary struct {
 	gorm.Model
 	OwnerID int    `json:"ownerID"`
@@ -14,12 +16,13 @@ type Diary struct {
 	Body    string `json:"body"`
 }
 
+// DiaryAccess model for database, determines which users have access to a diary
 type DiaryAccess struct {
-	FK_Diary int    `json:"diaryID"`
-	FK_User  string `json:"sharedUserID"`
+	FKDiary int    `json:"diaryID"`
+	FKUser  string `json:"sharedUserID"`
 }
 
-func addDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
+func addDiary(db *gorm.DB, info diaryInfo, c *gin.Context) {
 	var diary Diary
 
 	if diary.Title = info.Title; info.Title == "" {
@@ -65,7 +68,6 @@ func getAllSharedDiaries(db *gorm.DB, c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, sharedDiaries)
-
 }
 
 func updateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
@@ -89,12 +91,12 @@ func updateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 	// Update the diary entry body with the new data
 	db.Model(&Diary{}).Where("ID = ?", info.DiaryID).Update("Body", info.Body)
 
-	//Update Access table if necessary using Shared field
+	// Update Access table if necessary using Shared field
 	var access DiaryAccess
-	access.FK_Diary = info.DiaryID
+	access.FKDiary = info.DiaryID
 	if info.Shared != nil {
 		for i := 0; i < len(info.Shared); i++ {
-			access.FK_User = info.Shared[i]
+			access.FKUser = info.Shared[i]
 			if err := db.Create(&access).Error; err != nil {
 				c.JSON(http.StatusBadRequest, "failed to create access")
 				return

@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"net/http"
 )
 
-type DiaryInfo struct {
+type diaryInfo struct {
 	OwnerID int
 	DiaryID int
 	Title   string
@@ -17,34 +18,29 @@ type DiaryInfo struct {
 }
 
 func main() {
-
 	r := setupRouter()
 
 	r.Run(":8080")
-
 }
 
 func setupRouter() *gin.Engine {
-
 	r := gin.Default()
 
 	db, err := gorm.Open(sqlite.Open("mydatabase.db"), &gorm.Config{})
-
 	if err != nil {
 		panic("failed to connect to database")
 	}
 
 	db.AutoMigrate(&Diary{}, &DiaryAccess{})
 
-	//OAuth2 routes
+	// OAuth2 routes
 	r.GET("/oauth/redirect", func(c *gin.Context) {
 		handleOAuth(db, c)
 	})
 
-	//diary endpoints
+	// diary endpoints
 	r.POST("/diary", func(c *gin.Context) {
-
-		var info DiaryInfo
+		var info diaryInfo
 		if err := c.ShouldBindJSON(&info); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 			fmt.Println(err)
@@ -70,7 +66,7 @@ func setupRouter() *gin.Engine {
 		deleteDiary(db, c)
 	})
 
-	//user endpoints
+	// user endpoints
 	r.GET("/users/{id}", func(c *gin.Context) {
 		getUser(db, c)
 	})
@@ -80,5 +76,4 @@ func setupRouter() *gin.Engine {
 	})
 
 	return r
-
 }

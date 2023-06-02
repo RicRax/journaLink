@@ -4,18 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAddGetUpdateDiary(t *testing.T) {
 	router := setupRouter()
 
-	//adding diary
+	// adding diary
 	entryData := Diary{
 		Title:   "Test Entry",
 		OwnerID: 1, Body: "This is a test diary entry.",
@@ -27,7 +28,7 @@ func TestAddGetUpdateDiary(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	//getting entry
+	// getting entry
 	var addedEntry Diary
 	json.Unmarshal(resp.Body.Bytes(), &addedEntry)
 	entryID := strconv.FormatUint(uint64(addedEntry.ID), 10)
@@ -38,8 +39,13 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	fmt.Println(string(body))
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	//udpate entry
-	modifiedEntry := DiaryInfo{DiaryID: 1, Title: "Test Entry", Body: "Modified body", Shared: []string{"Riccardo", "Paolo"}}
+	// udpate entry
+	modifiedEntry := diaryInfo{
+		DiaryID: 1,
+		Title:   "Test Entry",
+		Body:    "Modified body",
+		Shared:  []string{"Riccardo", "Paolo"},
+	}
 	modifiedEntry.DiaryID = int(addedEntry.ID)
 	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
 	req, _ = http.NewRequest("POST", "/diary", bytes.NewBuffer(modifiedEntryJSON))
@@ -62,7 +68,7 @@ func TestGetSharedDiaries(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	//getting entry
+	// getting entry
 	var addedEntry Diary
 	json.Unmarshal(resp.Body.Bytes(), &addedEntry)
 	entryID := strconv.FormatUint(uint64(addedEntry.ID), 10)
@@ -73,8 +79,13 @@ func TestGetSharedDiaries(t *testing.T) {
 	fmt.Println(string(body))
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	//udpate entry
-	modifiedEntry := DiaryInfo{DiaryID: 1, Title: "Test Entry", Body: "Modified body", Shared: []string{"Riccardo", "Paolo"}}
+	// udpate entry
+	modifiedEntry := diaryInfo{
+		DiaryID: 1,
+		Title:   "Test Entry",
+		Body:    "Modified body",
+		Shared:  []string{"Riccardo", "Paolo"},
+	}
 	modifiedEntry.DiaryID = int(addedEntry.ID)
 	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
 	req, _ = http.NewRequest("POST", "/diary", bytes.NewBuffer(modifiedEntryJSON))
