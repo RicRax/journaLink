@@ -45,7 +45,7 @@ func handleOAuth(db *gorm.DB, c *gin.Context) {
 
 	defer res.Body.Close()
 
-	var AuthResponse OAuthAccessResponse
+	var AuthResponse oAuthAccessResponse
 	if err := json.NewDecoder(res.Body).Decode(&AuthResponse); err != nil {
 		fmt.Print("could not parse JSON response")
 		c.JSON(http.StatusBadRequest, "error could not parse JSON response")
@@ -53,5 +53,5 @@ func handleOAuth(db *gorm.DB, c *gin.Context) {
 	}
 
 	// AuthResponse.AccessToken
-	c.Redirect(http.StatusFound, "/welcome.html?access_token="+AuthResponse.AccessToken)
+	c.Redirect(http.StatusFound, "/home?access_token="+AuthResponse.AccessToken)
 }

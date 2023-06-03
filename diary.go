@@ -70,7 +70,7 @@ func getAllSharedDiaries(db *gorm.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, sharedDiaries)
 }
 
-func updateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
+func updateDiary(db *gorm.DB, info diaryInfo, c *gin.Context) {
 	var entryID int
 
 	if entryID = info.DiaryID; info.DiaryID == 0 {

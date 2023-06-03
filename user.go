@@ -16,8 +16,6 @@ type User struct {
 	Password string `json:"password"`
 }
 
-var userDiaryMap map[int]int = make(map[int]int)
-
 func addUser(db *gorm.DB, c *gin.Context) {
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {

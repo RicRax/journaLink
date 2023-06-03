@@ -25,6 +25,8 @@ func main() {
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
+	r.Static("/publicFront", "./publicFront")
+	r.LoadHTMLGlob("publicFront/*.html")
 
 	db, err := gorm.Open(sqlite.Open("mydatabase.db"), &gorm.Config{})
 	if err != nil {
@@ -36,6 +38,11 @@ func setupRouter() *gin.Engine {
 	// OAuth2 routes
 	r.GET("/oauth/redirect", func(c *gin.Context) {
 		handleOAuth(db, c)
+	})
+
+	// home route after authentication
+	r.GET("/home", func(c *gin.Context) {
+		handleHome(db, c)
 	})
 
 	// diary endpoints
