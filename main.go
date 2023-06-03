@@ -25,7 +25,6 @@ func main() {
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
-	r.LoadHTMLGlob("publicFront/*")
 
 	db, err := gorm.Open(sqlite.Open("mydatabase.db"), &gorm.Config{})
 	if err != nil {
