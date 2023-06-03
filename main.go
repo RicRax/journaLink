@@ -34,6 +34,11 @@ func setupRouter() *gin.Engine {
 
 	db.AutoMigrate(&Diary{}, &DiaryAccess{})
 
+	// login route
+	r.GET("/login", func(c *gin.Context) {
+		handleLogin(c)
+	})
+
 	// OAuth2 routes
 	r.GET("/oauth/redirect", func(c *gin.Context) {
 		handleOAuth(db, c)

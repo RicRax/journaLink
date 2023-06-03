@@ -13,7 +13,7 @@ import (
 type PageData struct {
 	Title   string
 	Welcome string
-	Diaries string
+	Diaries []string
 }
 
 func getGitHubUsername(c *gin.Context) string {
@@ -66,6 +66,8 @@ func renderHome(db *gorm.DB, c *gin.Context) {
 	</head>
 	<body>
 		<h1>{{.Welcome}}</h1>
+    <h2>Your Diaries<h2>
+    <a>{{.Diaries}}</a>
 	</body>
 	</html>
 	`
@@ -73,6 +75,8 @@ func renderHome(db *gorm.DB, c *gin.Context) {
 		Title: "SapphireHome",
 
 		Welcome: "Welcome, " + getGitHubUsername(c),
+
+		Diaries: []string{"namo"},
 	}
 
 	tmpl := template.Must(template.New("home.html").Parse(htmlTemplate))
