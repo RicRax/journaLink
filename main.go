@@ -45,16 +45,6 @@ func setupRouter() *gin.Engine {
 
 	// login routes
 	r.GET("/login", func(c *gin.Context) {
-		s := sessions.Default(c)
-
-		t := s.Get("token")
-
-		_, ok := sd.AuthState[t]
-
-		if ok {
-			c.Redirect(http.StatusMovedPermanently, "/home")
-		}
-
 		c.HTML(http.StatusOK, "login.html", nil)
 	})
 

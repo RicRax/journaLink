@@ -11,7 +11,7 @@ import (
 // Diary Model for database
 type Diary struct {
 	DID     uint   `gorm:"primaryKey; column:DID"`
-	OwnerID int    `                              json:"ownerID"`
+	OwnerID int    `gorm:"column:owner_id"        json:"ownerID"`
 	Title   string `                              json:"title"`
 	Body    string `                              json:"body"`
 }
@@ -70,25 +70,24 @@ func GetDiary(db *gorm.DB, c *gin.Context) {
 func GetAllDiariesOfUser(db *gorm.DB, c *gin.Context, id uint) []Diary {
 	var d []Diary
 
-	query := `WITH other_diaries AS (
-  SELECT d.DID, d.title, owns.uid as OwnerID
-  FROM diary_accesses da
-  JOIN diaries d ON d.DID = da.fk_diary
-  JOIN users owns ON d.owner_id = owns.uid
-  WHERE da.fk_user = ?
-  ),
-  my_diaries AS (
-  SELECT d.DID, d.title, ? as OwnerID
-  FROM users u
-  LEFT JOIN diaries d ON u.uid = u.uid
-  WHERE u.uid = ?
+	// query := WITH other_diaries AS (
+	//  SELECT d.DID, d.title, owns.uid as OwnerID
+	//  FROM diary_accesses da
+	//  JOIN diaries d ON d.DID = da.fk_diary
+	//  JOIN users owns ON d.owner_id = owns.uid
+	//  WHERE da.fk_user = ?
+
+	//  ),
+	query := `
+  WITH my_diaries AS (
+  SELECT d.DID, d.title, u.uid as OwnerID
+  FROM users u, diaries d
+  WHERE u.uid = diaries.owner_id AND u.uid = ?
   )
-  SELECT * FROM other_diaries
-  UNION ALL
   SELECT * FROM my_diaries
   `
 
-	db.Raw(query, id, id, id).Scan(&d)
+	db.Raw(query, id).Scan(&d)
 
 	return d
 }
