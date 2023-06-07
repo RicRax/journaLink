@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Sapphire Login</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body> 
+        <form id="myForm">
+        <input type="Username" name="Username">
+        <input type="Password" name="Password">
+        <button type="submit">Submit</button>
+        <div id="message"> </div>
+
+        <a href="https://github.com/login/oauth/authorize?client_id=03178089f0ff2ea0356d&redirect_uri=http://localhost:8080/oauth/redirect?registering=false">Login with github</a>
+
+
+        <a href="http://localhost:8080/register"> Register</a>
+ 
+
+    <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#myForm').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                var formData = {
+                    Username: $('input[name="Username"]').val(),
+                    Password: $('input[name="Password"]').val()
+                };
+
+                // Send the form data as JSON via POST request
+                $.ajax({
+                    url: '/login/authentication',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                      window.location = "http://localhost:8080/home";
+                                          },
+                    error: function(error) {
+                        // Handle errors
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>	
+

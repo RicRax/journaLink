@@ -1,0 +1,46 @@
+
+	<!DOCTYPE html>
+	<html>
+	<head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Add a diary</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
+  <form id="myForm"> 
+  <label for="Title">Title:</label>
+  <input type="text" id="Title" name="Title" required> 
+  <input type="submit" value="Submit">
+  <div id="message"></div>
+  </form>
+
+   <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#myForm').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                var formData = {
+                    Title: $('input[name="Title"]').val(),
+                };
+
+                // Send the form data as JSON via POST request
+                $.ajax({
+                    url: '/diary',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) { 
+                      $('#message').text('Diary submitted successfully!');
+                                          },
+                    error: function(error) {
+                        // Handle errors
+                    }
+                });
+            });
+        });
+    </script>
+  	</body>
+	</html>

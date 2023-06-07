@@ -1,0 +1,45 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register new user</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <form id="myForm">
+        <input type="Username" name="Username">
+        <input type="Password" name="Password">
+        <button type="submit">Submit</button>
+    </form>
+
+  <div id="message"> </div>
+
+    <script>
+        $(document).ready(function() {
+            // Handle form submission
+            $('#myForm').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                var formData = {
+                    Username: $('input[name="Username"]').val(),
+                    Password: $('input[name="Password"]').val()
+                };
+
+                // Send the form data as JSON via POST request
+                $.ajax({
+                    url: '/user',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                       // Display success message
+                        $('#message').text('Form submitted successfully!');                    },
+                    error: function(error) {
+                        // Handle errors
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>  

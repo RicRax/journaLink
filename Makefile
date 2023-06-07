@@ -16,6 +16,7 @@ lint: fmt
 vet: fmt
 
 	go vet .
+	shadow .
 
 .PHONY:vet
 

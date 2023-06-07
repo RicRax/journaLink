@@ -11,10 +11,6 @@ import (
 
 const clientID = "03178089f0ff2ea0356d"
 
-type oAuthAccessResponse struct {
-	AccessToken string `json:"access_token"`
-}
-
 func handleOAuth(db *gorm.DB, c *gin.Context) {
 	code := c.Query("code")
 
@@ -38,14 +34,17 @@ func handleOAuth(db *gorm.DB, c *gin.Context) {
 
 	res, err := httpClient.Do(req)
 	if err != nil {
-		fmt.Print("could not send HTTP request: %v", err)
+		fmt.Print("could not send HTTP request")
 		c.JSON(http.StatusInternalServerError, "internal server error")
 		return
 	}
 
 	defer res.Body.Close()
 
-	var AuthResponse oAuthAccessResponse
+	var AuthResponse struct {
+		AccessToken string `json:"access_token"`
+	}
+
 	if err := json.NewDecoder(res.Body).Decode(&AuthResponse); err != nil {
 		fmt.Print("could not parse JSON response")
 		c.JSON(http.StatusBadRequest, "error could not parse JSON response")
@@ -53,5 +52,8 @@ func handleOAuth(db *gorm.DB, c *gin.Context) {
 	}
 
 	// AuthResponse.AccessToken
-	c.Redirect(http.StatusFound, "/home?access_token="+AuthResponse.AccessToken)
+	c.Redirect(
+		http.StatusFound,
+		"/home?access_token="+AuthResponse.AccessToken,
+	)
 }

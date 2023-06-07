@@ -31,7 +31,7 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	// getting entry
 	var addedEntry Diary
 	json.Unmarshal(resp.Body.Bytes(), &addedEntry)
-	entryID := strconv.FormatUint(uint64(addedEntry.ID), 10)
+	entryID := strconv.FormatUint(uint64(addedEntry.DID), 10)
 	req, _ = http.NewRequest("GET", "/diary/"+entryID, nil)
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
@@ -46,7 +46,7 @@ func TestAddGetUpdateDiary(t *testing.T) {
 		Body:    "Modified body",
 		Shared:  []string{"Riccardo", "Paolo"},
 	}
-	modifiedEntry.DiaryID = int(addedEntry.ID)
+	modifiedEntry.DiaryID = int(addedEntry.DID)
 	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
 	req, _ = http.NewRequest("POST", "/diary", bytes.NewBuffer(modifiedEntryJSON))
 	resp = httptest.NewRecorder()
@@ -71,7 +71,7 @@ func TestGetSharedDiaries(t *testing.T) {
 	// getting entry
 	var addedEntry Diary
 	json.Unmarshal(resp.Body.Bytes(), &addedEntry)
-	entryID := strconv.FormatUint(uint64(addedEntry.ID), 10)
+	entryID := strconv.FormatUint(uint64(addedEntry.DID), 10)
 	req, _ = http.NewRequest("GET", "/diary/"+entryID, nil)
 	resp = httptest.NewRecorder()
 	router.ServeHTTP(resp, req)
@@ -86,7 +86,7 @@ func TestGetSharedDiaries(t *testing.T) {
 		Body:    "Modified body",
 		Shared:  []string{"Riccardo", "Paolo"},
 	}
-	modifiedEntry.DiaryID = int(addedEntry.ID)
+	modifiedEntry.DiaryID = int(addedEntry.DID)
 	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
 	req, _ = http.NewRequest("POST", "/diary", bytes.NewBuffer(modifiedEntryJSON))
 	resp = httptest.NewRecorder()

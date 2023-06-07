@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"html/template"
 	"io/ioutil"
 	"net/http"
 
@@ -10,13 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type PageData struct {
-	Title   string
-	Welcome string
-	Diaries []string
-}
-
-func getGitHubUsername(c *gin.Context) string {
+func getGitHubUsername(accessToken string, c *gin.Context) string {
 	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/user", nil)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -24,7 +17,7 @@ func getGitHubUsername(c *gin.Context) string {
 	}
 
 	req.Header.Set("Accept", "application/vnd.github.+json")
-	req.Header.Set("Authorization", "Bearer "+c.Query("access_token")) // not working c.Param
+	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
 
 	client := http.DefaultClient
@@ -57,32 +50,27 @@ func getGitHubUsername(c *gin.Context) string {
 	return responseData["login"].(string)
 }
 
-func renderHome(db *gorm.DB, c *gin.Context) {
-	htmlTemplate := `
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<title>{{.Title}}</title>
-	</head>
-	<body>
-		<h1>{{.Welcome}}</h1>
-    <h2>Your Diaries<h2>
-    <a>{{.Diaries}}</a>
-	</body>
-	</html>
-	`
-	data := PageData{
-		Title: "SapphireHome",
+func renderHome(db *gorm.DB, c *gin.Context, id uint) {
+	sd := getAllDiariesOfUser(db, c, id)
+	var sdstring []string
 
-		Welcome: "Welcome, " + getGitHubUsername(c),
-
-		Diaries: []string{"namo"},
+	for _, d := range sd {
+		sdstring = append(sdstring, d.Title)
 	}
 
-	tmpl := template.Must(template.New("home.html").Parse(htmlTemplate))
-	err := tmpl.Execute(c.Writer, data)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	data := struct {
+		Diaries []string
+	}{
+		Diaries: sdstring,
 	}
+
+	if sd == nil {
+		data.Diaries = append(data.Diaries, "You don't have any diaries!")
+	}
+
+	c.HTML(http.StatusOK, "home.html", data)
+}
+
+func renderAddDiary(db *gorm.DB, c *gin.Context) {
+	c.HTML(http.StatusOK, "addDiary.html", nil)
 }

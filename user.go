@@ -10,10 +10,10 @@ import (
 
 // User model for database
 type User struct {
-	gorm.Model
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	UID      uint   `gorm:"primarykey"`
+	Username string `gorm:"uniqueIndex" json:"username"`
+	Email    string `                   json:"email"`
+	Password string `                   json:"password"`
 }
 
 func addUser(db *gorm.DB, c *gin.Context) {
@@ -43,4 +43,19 @@ func getUser(db *gorm.DB, c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+func authenticateUser(db *gorm.DB, c *gin.Context) (User, error) {
+	var u User
+
+	if err := c.ShouldBindJSON(&u); err != nil {
+		c.JSON(http.StatusBadRequest, "bad request body")
+		return User{}, err
+	}
+
+	if err := db.Where("username= ? AND password= ?", u.Username, u.Password).First(&u).Error; err != nil {
+		return User{}, err
+	}
+
+	return u, nil
 }
