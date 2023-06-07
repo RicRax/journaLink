@@ -1,4 +1,4 @@
-module github.com/RicRax/waffleBackend
+module github.com/RicRax/journaLink
 
 go 1.20
 
