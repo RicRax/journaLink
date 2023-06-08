@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+
+	"github.com/RicRax/journaLink/auth"
 )
 
 // Diary Model for database
@@ -136,13 +139,27 @@ func UpdateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 }
 
 func DeleteDiary(db *gorm.DB, c *gin.Context) {
-	id := c.Param("id")
+	s := sessions.Default(c)
 
-	if err := db.Delete(&Diary{}, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Diary entry not found"})
-		fmt.Println(err)
-		return
+	t := s.Get("token")
+
+	id := auth.SessionsData.AuthState[t]
+
+	var Title struct {
+		Title string
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Diary entry with id " + id + " deleted"})
+	if err := c.ShouldBindJSON(&Title); err != nil {
+		c.JSON(http.StatusBadRequest, "Error bad request")
+	}
+
+	q := "DELETE FROM diaries WHERE title = ? AND owner_id = ?"
+
+	if err := db.Exec(q, Title.Title, id).Error; err != nil {
+		c.JSON(http.StatusBadRequest, "Diary with this title does not exist")
+	}
+
+	// ALSO DELETE FROM DIARY ACCESS
+
+	c.JSON(http.StatusOK, gin.H{"message": "Diary entry with title " + Title.Title + " deleted"})
 }

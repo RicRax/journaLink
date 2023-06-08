@@ -9,3 +9,5 @@ func (s *SessionData) Init() *SessionData {
 	s.AuthState = make(map[interface{}]uint)
 	return s
 }
+
+var SessionsData SessionData

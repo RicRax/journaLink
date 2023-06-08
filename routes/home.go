@@ -73,6 +73,10 @@ func RenderHome(db *gorm.DB, c *gin.Context, id uint) {
 	c.HTML(http.StatusOK, "home.html", data)
 }
 
-func RenderAddDiary(db *gorm.DB, c *gin.Context) {
+func RenderAddDiary(c *gin.Context) {
 	c.HTML(http.StatusOK, "addDiary.html", nil)
+}
+
+func RenderDeleteDiary(c *gin.Context) {
+	c.HTML(http.StatusOK, "deleteDiary.html", nil)
 }

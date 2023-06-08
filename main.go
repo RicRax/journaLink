@@ -15,16 +15,13 @@ import (
 	"github.com/RicRax/journaLink/routes"
 )
 
-var (
-	store                  = cookie.NewStore([]byte("secret"))
-	sd    auth.SessionData = auth.SessionData{}
-)
+var store = cookie.NewStore([]byte("secret"))
 
 func main() {
 	r := setupRouter()
 
 	auth.InitRand()
-	sd.Init()
+	auth.SessionsData.Init()
 
 	r.Run(":8080")
 }
@@ -61,7 +58,7 @@ func setupRouter() *gin.Engine {
 		}
 
 		r := auth.RandSeq(10)
-		sd.AuthState[r] = u.UID
+		auth.SessionsData.AuthState[r] = u.UID
 		s.Set("token", r)
 		s.Save()
 
@@ -83,7 +80,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/home", func(c *gin.Context) {
 		s := sessions.Default(c)
 		t := s.Get("token")
-		id, ok := sd.AuthState[t]
+		id, ok := auth.SessionsData.AuthState[t]
 
 		if ok {
 			routes.RenderHome(db, c, id)
@@ -91,14 +88,18 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.GET("/home/addDiary", func(c *gin.Context) {
-		routes.RenderAddDiary(db, c)
+		routes.RenderAddDiary(c)
+	})
+
+	r.GET("/home/deleteDiary", func(c *gin.Context) {
+		routes.RenderDeleteDiary(c)
 	})
 
 	// diary endpoints
 	r.POST("/diary", func(c *gin.Context) {
 		s := sessions.Default(c)
 		t := s.Get("token")
-		id, ok := sd.AuthState[t]
+		id, ok := auth.SessionsData.AuthState[t]
 
 		if !ok {
 			c.JSON(http.StatusInternalServerError, "could not identify token")
@@ -123,11 +124,7 @@ func setupRouter() *gin.Engine {
 		model.GetDiary(db, c)
 	})
 
-	// r.GET("/diary/shared", func(c *gin.Context) {
-	// 	getAllSharedDiaries(db, c)
-	// })
-
-	r.DELETE("/diary/:id", func(c *gin.Context) {
+	r.DELETE("/diary", func(c *gin.Context) {
 		model.DeleteDiary(db, c)
 	})
 
