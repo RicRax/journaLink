@@ -1,8 +1,6 @@
 package routes
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,46 +9,46 @@ import (
 	"github.com/RicRax/journaLink/model"
 )
 
-func GetGitHubUsername(accessToken string, c *gin.Context) string {
-	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/user", nil)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return "error"
-	}
-
-	req.Header.Set("Accept", "application/vnd.github.+json")
-	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-
-	client := http.DefaultClient
-	response, err := client.Do(req)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return "error sending request"
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode != http.StatusOK {
-		c.String(response.StatusCode, response.Status)
-		return "error api sent error"
-	}
-
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return "error"
-	}
-
-	var responseData map[string]interface{}
-	err = json.Unmarshal(body, &responseData)
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return "error"
-	}
-
-	return responseData["login"].(string)
-}
+// func GetGitHubUsername(accessToken string, c *gin.Context) string {
+// 	req, err := http.NewRequest(http.MethodGet, "https://api.github.com/user", nil)
+// 	if err != nil {
+// 		c.String(http.StatusInternalServerError, err.Error())
+// 		return "error"
+// 	}
+//
+// 	req.Header.Set("Accept", "application/vnd.github.+json")
+// 	req.Header.Set("Authorization", "Bearer "+accessToken)
+// 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+//
+// 	client := http.DefaultClient
+// 	response, err := client.Do(req)
+// 	if err != nil {
+// 		c.String(http.StatusInternalServerError, err.Error())
+// 		return "error sending request"
+// 	}
+//
+// 	defer response.Body.Close()
+//
+// 	if response.StatusCode != http.StatusOK {
+// 		c.String(response.StatusCode, response.Status)
+// 		return "error api sent error"
+// 	}
+//
+// 	body, err := ioutil.ReadAll(response.Body)
+// 	if err != nil {
+// 		c.String(http.StatusInternalServerError, err.Error())
+// 		return "error"
+// 	}
+//
+// 	var responseData map[string]interface{}
+// 	err = json.Unmarshal(body, &responseData)
+// 	if err != nil {
+// 		c.String(http.StatusInternalServerError, err.Error())
+// 		return "error"
+// 	}
+//
+// 	return responseData["login"].(string)
+// }
 
 func RenderHome(db *gorm.DB, c *gin.Context, id uint) {
 	sd := model.GetAllDiariesOfUser(db, c, id)
@@ -79,4 +77,8 @@ func RenderAddDiary(c *gin.Context) {
 
 func RenderDeleteDiary(c *gin.Context) {
 	c.HTML(http.StatusOK, "deleteDiary.html", nil)
+}
+
+func RenderViewDiary(c *gin.Context) {
+	c.HTML(http.StatusOK, "viewDiary.html", nil)
 }

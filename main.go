@@ -87,6 +87,10 @@ func setupRouter() *gin.Engine {
 		}
 	})
 
+	r.GET("/home/viewDiary", func(c *gin.Context) {
+		routes.RenderViewDiary(c)
+	})
+
 	r.GET("/home/addDiary", func(c *gin.Context) {
 		routes.RenderAddDiary(c)
 	})
@@ -113,14 +117,14 @@ func setupRouter() *gin.Engine {
 
 		info.OwnerID = int(id)
 
-		if info.DiaryID != 0 {
+		if info.DID != 0 {
 			model.UpdateDiary(db, info, c)
 		} else {
 			model.AddDiary(db, info, c)
 		}
 	})
 
-	r.GET("/diary/:id", func(c *gin.Context) {
+	r.GET("/diary/:title", func(c *gin.Context) {
 		model.GetDiary(db, c)
 	})
 

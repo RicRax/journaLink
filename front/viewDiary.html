@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View a Diary</title>
+</head>
+<body>
+    <h1>Enter the name of the Diary to view</h1>
+
+    <form id="my-form">
+    <label for="title-input">Title:</label>
+    <input type="text" id="title-input" required>
+    <button type="submit">Submit</button>
+    </form>
+
+    <h1>Your Diary</h1>
+    <textarea id="json-container"></textarea>
+    <br>
+    <button onclick="saveText()">Save</button>
+
+    <script>
+    var DID = 0;
+    window.addEventListener('DOMContentLoaded', function() {
+      var form = document.getElementById('my-form');
+      var input = document.getElementById('title-input');
+      var container = document.getElementById('json-container');
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var title = input.value;
+
+        fetch('http://localhost:8080/diary/' + encodeURIComponent(title))
+          .then(response => response.json())
+          .then(jsonData => {
+            container.value = jsonData[0].body;
+            DID = jsonData[0].DID
+          })
+          .catch(error => {
+            console.error(error);
+          });
+      });
+    });
+
+
+    function saveText(){
+    var text = document.getElementById('json-container').value;
+      var data = {
+        Body: text,
+        DID:  DID
+      }
+
+
+    fetch('/diary', {
+         method: 'POST',
+         body: JSON.stringify(data),
+         headers: {
+           'Content-Type': 'application/json'
+         }
+       })
+       .then(response => {
+         // Handle the response
+       })
+       .catch(error => {
+         // Handle errors
+       });
+    }
+
+  </script>
+</body>
+</html>

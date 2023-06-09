@@ -21,7 +21,7 @@ type Diary struct {
 
 type DiaryInfo struct {
 	OwnerID int
-	DiaryID int
+	DID     int
 	Title   string
 	Body    string
 	Shared  []string
@@ -57,12 +57,16 @@ func AddDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 }
 
 func GetDiary(db *gorm.DB, c *gin.Context) {
-	id := c.Param("id")
+	title := c.Param("title")
 
-	var d Diary
+	s := sessions.Default(c)
+	t := s.Get("token")
+	uid := auth.SessionsData.AuthState[t]
 
-	if err := db.First(&d, id).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get entries"})
+	var d []Diary
+
+	if err := db.Where("title = ? AND owner_id = ?", title, uid).First(&d).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get diary"})
 		fmt.Println(err)
 		return
 	}
@@ -98,13 +102,13 @@ func GetAllDiariesOfUser(db *gorm.DB, c *gin.Context, id uint) []Diary {
 func UpdateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 	var id int
 
-	if info.DiaryID == 0 {
+	if info.DID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing DiaryID"})
 		fmt.Println("missing DiaryID")
 		return
 	}
 
-	id = info.DiaryID
+	id = info.DID
 
 	var check Diary
 
@@ -116,11 +120,11 @@ func UpdateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 	}
 
 	// Update the diary entry body with the new data
-	db.Model(&Diary{}).Where("DID = ?", info.DiaryID).Update("Body", info.Body)
+	db.Model(&Diary{}).Where("DID = ?", info.DID).Update("Body", info.Body)
 
 	// Update Access table if necessary using Shared field
 	var da DiaryAccess
-	da.FKDiary = info.DiaryID
+	da.FKDiary = info.DID
 	if info.Shared != nil {
 		for i := 0; i < len(info.Shared); i++ {
 			da.FKUser = info.Shared[i]
@@ -132,7 +136,7 @@ func UpdateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 	}
 
 	// Return the updated diary
-	db.First(&check, info.DiaryID)
+	db.First(&check, info.DID)
 	var checkA DiaryAccess
 	db.First(&checkA)
 	c.JSON(http.StatusOK, gin.H{"udpatedDiary": check, "newAccesses": checkA})
