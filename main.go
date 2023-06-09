@@ -47,9 +47,6 @@ func setupRouter() *gin.Engine {
 
 	r.POST("/login/authentication", func(c *gin.Context) {
 		s := sessions.Default(c)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, "cookie set error")
-		}
 
 		u, err := model.AuthenticateUser(db, c)
 		if err != nil {
@@ -72,8 +69,14 @@ func setupRouter() *gin.Engine {
 	})
 
 	// OAuth2 routes
+	r.GET("/oauth", func(c *gin.Context) {
+		routes.RandomStates = append(routes.RandomStates, auth.RandSeq(10))
+		url := routes.GoogleOauthConfig.AuthCodeURL(routes.RandomStates[len(routes.RandomStates)-1])
+		c.Redirect(http.StatusTemporaryRedirect, url)
+	})
+
 	r.GET("/oauth/redirect", func(c *gin.Context) {
-		auth.HandleOAuth(db, c)
+		routes.HandleOAuthGoogle(db, c)
 	})
 
 	// home route after authentication

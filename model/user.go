@@ -45,6 +45,16 @@ func GetUser(db *gorm.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func GetUsernameFromId(db *gorm.DB, id uint) (string, error) {
+	var u User
+
+	if err := db.Where("UID = ?", id).First(&u).Error; err != nil {
+		return "", err
+	}
+
+	return u.Username, nil
+}
+
 func AuthenticateUser(db *gorm.DB, c *gin.Context) (User, error) {
 	var u User
 
@@ -58,4 +68,20 @@ func AuthenticateUser(db *gorm.DB, c *gin.Context) (User, error) {
 	}
 
 	return u, nil
+}
+
+func CheckUserExists(db *gorm.DB, username string) bool {
+	var user User
+	err := db.Where("username = ?", username).First(&user).Error
+	if err == nil {
+		// User exists
+		return true
+	} else if err == gorm.ErrRecordNotFound {
+		// User does not exist
+		return false
+	} else {
+		// Error occurred while querying the database
+		// Handle the error
+		return false
+	}
 }
