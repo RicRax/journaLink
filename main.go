@@ -33,6 +33,8 @@ func setupRouter() *gin.Engine {
 
 	r.LoadHTMLGlob("front/*")
 
+	r.Static("/static", "./static")
+
 	db, err := gorm.Open(sqlite.Open("mydatabase.db"), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect to database")
@@ -129,6 +131,17 @@ func setupRouter() *gin.Engine {
 
 	r.GET("/diary/:title", func(c *gin.Context) {
 		model.GetDiary(db, c)
+	})
+
+	r.GET("/diary", func(c *gin.Context) {
+		s := sessions.Default(c)
+		t := s.Get("token")
+		id, ok := auth.SessionsData.AuthState[t]
+
+		if ok {
+			ds := model.GetAllDiariesOfUser(db, c, id)
+			c.JSON(http.StatusOK, ds)
+		}
 	})
 
 	r.DELETE("/diary", func(c *gin.Context) {

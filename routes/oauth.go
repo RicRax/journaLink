@@ -87,7 +87,7 @@ func HandleOAuthGoogle(db *gorm.DB, c *gin.Context) {
 
 	// if necessary create user
 	u := model.User{
-		Username: result.Name, // get google account name
+		Username: result.Name,
 	}
 
 	if !model.CheckUserExists(db, result.Name) {
@@ -96,7 +96,9 @@ func HandleOAuthGoogle(db *gorm.DB, c *gin.Context) {
 			fmt.Println(err)
 			return
 		}
-	} // else get userid
+	} else {
+		db.Where("username = ?", u.Username).First(&u)
+	}
 
 	// link token to userid in sessionsData
 	auth.SessionsData.AuthState[r] = u.UID

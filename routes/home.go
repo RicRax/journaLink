@@ -5,37 +5,35 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-
-	"github.com/RicRax/journaLink/model"
 )
 
 func RenderHome(db *gorm.DB, c *gin.Context, id uint) {
-	sd := model.GetAllDiariesOfUser(db, c, id)
-	var sdstring []string
+	// sd := model.GetAllDiariesOfUser(db, c, id)
+	// var sdstring []string
+	//
+	// for _, d := range sd {
+	// 	sdstring = append(sdstring, d.Title)
+	// }
+	//
+	// wn, err := model.GetUsernameFromId(db, id)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, "could not get username")
+	// 	return
+	// }
+	//
+	// data := struct {
+	// 	Username string
+	// 	Diaries  []string
+	// }{
+	// 	Username: wn,
+	// 	Diaries:  sdstring,
+	// }
+	//
+	// if sd == nil {
+	// 	data.Diaries = append(data.Diaries, "You don't have any diaries!")
+	// }
 
-	for _, d := range sd {
-		sdstring = append(sdstring, d.Title)
-	}
-
-	wn, err := model.GetUsernameFromId(db, id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, "could not get username")
-		return
-	}
-
-	data := struct {
-		Username string
-		Diaries  []string
-	}{
-		Username: wn,
-		Diaries:  sdstring,
-	}
-
-	if sd == nil {
-		data.Diaries = append(data.Diaries, "You don't have any diaries!")
-	}
-
-	c.HTML(http.StatusOK, "home.html", data)
+	c.HTML(http.StatusOK, "home.html", nil)
 }
 
 func RenderAddDiary(c *gin.Context) {

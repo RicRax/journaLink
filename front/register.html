@@ -1,20 +1,24 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Register new user</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/register.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <title>Registration Page</title>
 </head>
 <body>
+  <div class="container">
     <form id="myForm">
-        <input type="Username" name="Username">
-        <input type="Password" name="Password">
-        <button type="submit">Submit</button>
+      <h1>Register</h1>
+      <input type="text" placeholder="Username" name="Username" required>
+      <input type="password" placeholder="Password" name="Password" required>
+      <input type="password" placeholder="Confirm Password" required>
+      <button type="submit">Register</button>
+      <p>Already have an account? <a href="#">Login</a></p>
     </form>
-
-  <div id="message"> </div>
-
-    <script>
+  </div>
+  <script>
         $(document).ready(function() {
             // Handle form submission
             $('#myForm').submit(function(event) {
@@ -41,5 +45,6 @@
             });
         });
     </script>
+
 </body>
-</html>  
+</html>
