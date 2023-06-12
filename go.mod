@@ -1,4 +1,4 @@
-module github.com/RicRax/journaLink
+module github.com/RicRax/journalink
 
 go 1.20
 
@@ -28,6 +28,8 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.2 // indirect
 	github.com/goccy/go-json v0.10.0 // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-dap v0.7.0 // indirect
 	github.com/gorilla/context v1.1.1 // indirect

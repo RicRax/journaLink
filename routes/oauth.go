@@ -12,8 +12,8 @@ import (
 	"golang.org/x/oauth2/google"
 	"gorm.io/gorm"
 
-	"github.com/RicRax/journaLink/auth"
-	"github.com/RicRax/journaLink/model"
+	"github.com/RicRax/journalink/auth"
+	"github.com/RicRax/journalink/model"
 )
 
 const clientIDGoogle = "723078198829-4gvefdsns5223ogerdnrvrf9tutrtkri.apps.googleusercontent.com"
@@ -101,6 +101,6 @@ func HandleOAuthGoogle(db *gorm.DB, c *gin.Context) {
 	}
 
 	// link token to userid in sessionsData
-	auth.SessionsData.AuthState[r] = u.UID
+	// auth.SessionsData.AuthState[r] = u.UID
 	c.Redirect(http.StatusPermanentRedirect, "/home")
 }

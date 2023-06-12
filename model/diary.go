@@ -4,11 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-
-	"github.com/RicRax/journaLink/auth"
 )
 
 // Diary Model for database
@@ -56,12 +53,8 @@ func AddDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 	c.JSON(http.StatusOK, d)
 }
 
-func GetDiary(db *gorm.DB, c *gin.Context) {
+func GetDiary(db *gorm.DB, c *gin.Context, uid uint) {
 	title := c.Param("title")
-
-	s := sessions.Default(c)
-	t := s.Get("token")
-	uid := auth.SessionsData.AuthState[t]
 
 	var d []Diary
 
@@ -142,13 +135,7 @@ func UpdateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"udpatedDiary": check, "newAccesses": checkA})
 }
 
-func DeleteDiary(db *gorm.DB, c *gin.Context) {
-	s := sessions.Default(c)
-
-	t := s.Get("token")
-
-	id := auth.SessionsData.AuthState[t]
-
+func DeleteDiary(db *gorm.DB, c *gin.Context, id uint) {
 	var Title struct {
 		Title string
 	}

@@ -10,9 +10,9 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/RicRax/journaLink/auth"
-	"github.com/RicRax/journaLink/model"
-	"github.com/RicRax/journaLink/routes"
+	"github.com/RicRax/journalink/auth"
+	"github.com/RicRax/journalink/model"
+	"github.com/RicRax/journalink/routes"
 )
 
 var store = cookie.NewStore([]byte("secret"))
@@ -21,7 +21,6 @@ func main() {
 	r := setupRouter()
 
 	auth.InitRand()
-	auth.SessionsData.Init()
 
 	r.Run(":8080")
 }
@@ -48,20 +47,13 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.POST("/login/authentication", func(c *gin.Context) {
-		s := sessions.Default(c)
+		auth.Login(db, c)
+	})
 
-		u, err := model.AuthenticateUser(db, c)
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, "could not authenticate")
-			return
+	r.GET("/refresh", func(c *gin.Context) {
+		if err := auth.RefreshToken(c); err != nil {
+			c.JSON(http.StatusInternalServerError, "error refreshing token")
 		}
-
-		r := auth.RandSeq(10)
-		auth.SessionsData.AuthState[r] = u.UID
-		s.Set("token", r)
-		s.Save()
-
-		c.JSON(http.StatusOK, gin.H{"redirectPath": "/home"})
 		return
 	})
 
@@ -72,6 +64,7 @@ func setupRouter() *gin.Engine {
 
 	// OAuth2 routes
 	r.GET("/oauth", func(c *gin.Context) {
+		// FIX RANDOMSTATES
 		routes.RandomStates = append(routes.RandomStates, auth.RandSeq(10))
 		url := routes.GoogleOauthConfig.AuthCodeURL(routes.RandomStates[len(routes.RandomStates)-1])
 		c.Redirect(http.StatusTemporaryRedirect, url)
@@ -83,13 +76,13 @@ func setupRouter() *gin.Engine {
 
 	// home route after authentication
 	r.GET("/home", func(c *gin.Context) {
-		s := sessions.Default(c)
-		t := s.Get("token")
-		id, ok := auth.SessionsData.AuthState[t]
-
-		if ok {
-			routes.RenderHome(db, c, id)
+		id, err := auth.AuthenticateJwt(c, db)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, "error while authenticating token")
+			return
 		}
+
+		routes.RenderHome(db, c, id)
 	})
 
 	r.GET("/home/viewDiary", func(c *gin.Context) {
@@ -106,13 +99,12 @@ func setupRouter() *gin.Engine {
 
 	// diary endpoints
 	r.POST("/diary", func(c *gin.Context) {
-		s := sessions.Default(c)
-		t := s.Get("token")
-		id, ok := auth.SessionsData.AuthState[t]
-
-		if !ok {
-			c.JSON(http.StatusInternalServerError, "could not identify token")
+		uid, err := auth.AuthenticateJwt(c, db)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, "error while authenticating token")
+			return
 		}
+
 		var info model.DiaryInfo
 		if err := c.ShouldBindJSON(&info); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
@@ -120,7 +112,7 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		info.OwnerID = int(id)
+		info.OwnerID = int(uid)
 
 		if info.DID != 0 {
 			model.UpdateDiary(db, info, c)
@@ -130,22 +122,32 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.GET("/diary/:title", func(c *gin.Context) {
-		model.GetDiary(db, c)
+		uid, err := auth.AuthenticateJwt(c, db)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, "error while authenticating token")
+			return
+		}
+		model.GetDiary(db, c, uid)
 	})
 
 	r.GET("/diary", func(c *gin.Context) {
-		s := sessions.Default(c)
-		t := s.Get("token")
-		id, ok := auth.SessionsData.AuthState[t]
-
-		if ok {
-			ds := model.GetAllDiariesOfUser(db, c, id)
-			c.JSON(http.StatusOK, ds)
+		id, err := auth.AuthenticateJwt(c, db)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, "error while authenticating token")
+			return
 		}
+
+		ds := model.GetAllDiariesOfUser(db, c, id)
+		c.JSON(http.StatusOK, ds)
 	})
 
 	r.DELETE("/diary", func(c *gin.Context) {
-		model.DeleteDiary(db, c)
+		id, err := auth.AuthenticateJwt(c, db)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, "error while authenticating token")
+			return
+		}
+		model.DeleteDiary(db, c, id)
 	})
 
 	// user endpoints

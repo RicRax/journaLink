@@ -55,19 +55,14 @@ func GetUsernameFromId(db *gorm.DB, id uint) (string, error) {
 	return u.Username, nil
 }
 
-func AuthenticateUser(db *gorm.DB, c *gin.Context) (User, error) {
+func GetIdFromUsername(db *gorm.DB, username string) (uint, error) {
 	var u User
 
-	if err := c.ShouldBindJSON(&u); err != nil {
-		c.JSON(http.StatusBadRequest, "bad request body")
-		return User{}, err
+	if err := db.Where("username = ?", username).First(&u).Error; err != nil {
+		return 0, err
 	}
 
-	if err := db.Where("username= ? AND password= ?", u.Username, u.Password).First(&u).Error; err != nil {
-		return User{}, err
-	}
-
-	return u, nil
+	return u.UID, nil
 }
 
 func CheckUserExists(db *gorm.DB, username string) bool {
