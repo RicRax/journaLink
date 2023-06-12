@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"gorm.io/gorm"
@@ -99,6 +101,29 @@ func HandleOAuthGoogle(db *gorm.DB, c *gin.Context) {
 	} else {
 		db.Where("username = ?", u.Username).First(&u)
 	}
+
+	// create jwt
+
+	exprirationTime := time.Now().Add(5 * time.Minute)
+
+	claims := auth.Claims{
+		Username: u.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(exprirationTime),
+		},
+	}
+
+	jwtTkn := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	signedJwt, err := jwtTkn.SignedString(auth.JwtKey)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "error signing token")
+		return
+	}
+
+	s.Set("jwtToken", signedJwt)
+
+	s.Save()
 
 	// link token to userid in sessionsData
 	// auth.SessionsData.AuthState[r] = u.UID
