@@ -11,23 +11,23 @@ import (
 // Diary Model for database
 type Diary struct {
 	DID     uint   `gorm:"primaryKey; column:DID"`
-	OwnerID int    `gorm:"column:owner_id"        json:"ownerID"`
+	OwnerID uint   `gorm:"column:owner_id"        json:"ownerID"`
 	Title   string `                              json:"title"`
 	Body    string `                              json:"body"`
 }
 
 type DiaryInfo struct {
-	OwnerID int
-	DID     int
+	OwnerID uint
+	DID     uint
 	Title   string
 	Body    string
-	Shared  []string
+	Shared  string
 }
 
 // DiaryAccess model for database, determines which users have access to a diary
 type DiaryAccess struct {
-	FKDiary int    `json:"diaryID"      gorm:"column:fk_diary"`
-	FKUser  string `json:"sharedUserID" gorm:"column:fk_user"`
+	FKDiary uint `json:"diaryID"      gorm:"column:fk_diary"`
+	FKUser  uint `json:"sharedUserID" gorm:"column:fk_user"`
 }
 
 func AddDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
@@ -50,6 +50,16 @@ func AddDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
+
+	da := DiaryAccess{
+		FKDiary: d.DID,
+		FKUser:  d.OwnerID,
+	}
+
+	if err := db.Create(&da).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, "failed to create access")
+		return
+	}
 	c.JSON(http.StatusOK, d)
 }
 
@@ -58,42 +68,38 @@ func GetDiary(db *gorm.DB, c *gin.Context, uid uint) {
 
 	var d []Diary
 
-	if err := db.Where("title = ? AND owner_id = ?", title, uid).First(&d).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to get diary"})
-		fmt.Println(err)
+	query2 := `SELECT d.DID, d.title, d.owner_id, d.body 
+  FROM diaries d, diary_accesses da 
+  WHERE d.DID = da.fk_diary
+  AND da.fk_user = ? AND d.title = ?
+  `
+
+	if err := db.Raw(query2, uid, title).Scan(&d).Error; err != nil {
+		c.JSON(http.StatusBadRequest, "could not get diaries")
 		return
 	}
 
 	c.JSON(http.StatusOK, d)
 }
 
-func GetAllDiariesOfUser(db *gorm.DB, c *gin.Context, id uint) []Diary {
+func GetAllDiariesOfUser(db *gorm.DB, c *gin.Context, uid uint) ([]Diary, error) {
 	var d []Diary
 
-	query := `WITH other_diaries AS (
-  SELECT d.DID, d.title, owns.uid as OwnerID
-  FROM diary_accesses da
-  JOIN diaries d ON d.DID = da.fk_diary
-  JOIN users owns ON d.owner_id = owns.uid
-  WHERE da.fk_user = ?
-  ),	
-  my_diaries AS (
-  SELECT d.DID, d.title, u.uid as OwnerID
-  FROM users u, diaries d
-  WHERE u.uid = d.owner_id AND u.uid = ?
-  )
-  SELECT * FROM my_diaries
-  UNION ALL
-  SELECT * FROM other_diaries
+	query2 := `SELECT d.DID, d.title, d.owner_id, d.body  
+  FROM diaries d, diary_accesses da 
+  WHERE d.DID= da.fk_diary
+  AND da.fk_user = ?
   `
 
-	db.Raw(query, id, id).Scan(&d)
-
-	return d
+	if err := db.Raw(query2, uid).Scan(&d).Error; err != nil {
+		c.JSON(http.StatusBadRequest, "could not get diaries")
+		return nil, err
+	}
+	return d, nil
 }
 
 func UpdateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
-	var id int
+	var id uint
 
 	if info.DID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing DiaryID"})
@@ -112,27 +118,26 @@ func UpdateDiary(db *gorm.DB, info DiaryInfo, c *gin.Context) {
 		return
 	}
 
-	// Update the diary entry body with the new data
-	db.Model(&Diary{}).Where("DID = ?", info.DID).Update("Body", info.Body)
-
-	// Update Access table if necessary using Shared field
-	var da DiaryAccess
-	da.FKDiary = info.DID
-	if info.Shared != nil {
-		for i := 0; i < len(info.Shared); i++ {
-			da.FKUser = info.Shared[i]
-			if err := db.Create(&da).Error; err != nil {
-				c.JSON(http.StatusBadRequest, "failed to create access")
-				return
-			}
+	// case inviting another user
+	if info.Shared != "" {
+		var da DiaryAccess
+		da.FKDiary = info.DID
+		username, err := GetIdFromUsername(db, info.Shared)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, "could not find user id")
+			return
 		}
+		da.FKUser = username
+
+		if err := db.Create(&da).Error; err != nil {
+			c.JSON(http.StatusBadRequest, "failed to create access")
+			return
+		}
+	} else { // case updating body
+		db.Model(&Diary{}).Where("DID = ?", info.DID).Update("Body", info.Body)
 	}
 
-	// Return the updated diary
-	db.First(&check, info.DID)
-	var checkA DiaryAccess
-	db.First(&checkA)
-	c.JSON(http.StatusOK, gin.H{"udpatedDiary": check, "newAccesses": checkA})
+	c.JSON(http.StatusOK, gin.H{"udpatedDiary": check})
 }
 
 func DeleteDiary(db *gorm.DB, c *gin.Context, id uint) {

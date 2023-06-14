@@ -112,7 +112,7 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		info.OwnerID = int(uid)
+		info.OwnerID = uid
 
 		if info.DID != 0 {
 			model.UpdateDiary(db, info, c)
@@ -137,7 +137,10 @@ func setupRouter() *gin.Engine {
 			return
 		}
 
-		ds := model.GetAllDiariesOfUser(db, c, id)
+		ds, err := model.GetAllDiariesOfUser(db, c, id)
+		if err != nil {
+			return
+		}
 		c.JSON(http.StatusOK, ds)
 	})
 
