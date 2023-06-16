@@ -149,13 +149,16 @@ func DeleteDiary(db *gorm.DB, c *gin.Context, id uint) {
 		c.JSON(http.StatusBadRequest, "Error bad request")
 	}
 
+	if Title.Title == "" {
+		c.JSON(http.StatusBadRequest, "Missing title from request")
+	}
+
 	q := "DELETE FROM diaries WHERE title = ? AND owner_id = ?"
 
 	if err := db.Exec(q, Title.Title, id).Error; err != nil {
-		c.JSON(http.StatusBadRequest, "Diary with this title does not exist")
+		c.JSON(http.StatusBadRequest, "Error while executing query")
+		return
 	}
-
-	// ALSO DELETE FROM DIARY ACCESS
 
 	c.JSON(http.StatusOK, gin.H{"message": "Diary entry with title " + Title.Title + " deleted"})
 }

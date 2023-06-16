@@ -119,7 +119,7 @@ func TestAddGetUpdateDiary(t *testing.T) {
 		})
 	}
 
-	// udpate entry
+	// udpate diary
 	testUpdateDiary := []testCase{
 		{"Update Valid Diary", `{"DID" : 1,"Body":"test"}`, http.StatusOK},
 		{"Update Diary with DID 0", `{"DID" : 0, "Body": "test"}`, http.StatusBadRequest},
@@ -129,6 +129,34 @@ func TestAddGetUpdateDiary(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			req := httptest.NewRequest(
 				"POST",
+				"/diary",
+				bytes.NewBufferString(tc.RequestBody),
+			)
+
+			req.AddCookie(jwt)
+			w := httptest.NewRecorder()
+
+			router.ServeHTTP(w, req)
+
+			resp := w.Result()
+
+			if resp.StatusCode != tc.ExpectedCode {
+				t.Errorf("Expected status code %d, got %d", tc.ExpectedCode, resp.StatusCode)
+			}
+		})
+	}
+
+	// delete diary
+
+	testDeleteDiary := []testCase{
+		{"Delete Valid Diary", `{"Title" : "test"}`, http.StatusOK},
+		{"Delete unexisting diary", `{"Title" : ""}`, http.StatusBadRequest},
+	}
+
+	for _, tc := range testDeleteDiary {
+		t.Run(tc.Name, func(t *testing.T) {
+			req := httptest.NewRequest(
+				"DELETE",
 				"/diary",
 				bytes.NewBufferString(tc.RequestBody),
 			)
