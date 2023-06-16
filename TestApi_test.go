@@ -120,56 +120,29 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	}
 
 	// udpate entry
-	// 	modifiedEntry := DiaryInfo{
-	// 		DiaryID: 1,
-	// 		Title:   "Test Entry",
-	// 		Body:    "Modified body",
-	// 		Shared:  []string{"Riccardo", "Paolo"},
-	// 	}
-	// 	modifiedEntry.DiaryID = int(addedEntry.DID)
-	// 	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
-	// 	req, _ = http.NewRequest("POST", "/diary", bytes.NewBuffer(modifiedEntryJSON))
-	// 	resp = httptest.NewRecorder()
-	// 	router.ServeHTTP(resp, req)
-	// 	assert.Equal(t, http.StatusOK, resp.Code)
-	// }
-	//
-	// func TestGetSharedDiaries(t *testing.T) {
-	// 	router := setupRouter()
-	// 	entryData := Diary{
-	// 		Title:   "Test Entry",
-	// 		OwnerID: 1,
-	// 		Body:    "This is a test diary entry.",
-	// 	}
-	// 	entryJSON, _ := json.Marshal(entryData)
-	// 	resp := httptest.NewRecorder()
-	// 	req, _ := http.NewRequest("POST", "/diary", bytes.NewBuffer(entryJSON))
-	// 	router.ServeHTTP(resp, req)
-	//
-	// 	assert.Equal(t, http.StatusOK, resp.Code)
-	//
-	// 	// getting entry
-	// 	var addedEntry Diary
-	// 	json.Unmarshal(resp.Body.Bytes(), &addedEntry)
-	// 	entryID := strconv.FormatUint(uint64(addedEntry.DID), 10)
-	// 	req, _ = http.NewRequest("GET", "/diary/"+entryID, nil)
-	// 	resp = httptest.NewRecorder()
-	// 	router.ServeHTTP(resp, req)
-	// 	body, _ := io.ReadAll(resp.Body)
-	// 	fmt.Println(string(body))
-	// 	assert.Equal(t, http.StatusOK, resp.Code)
-	//
-	// 	// udpate entry
-	// 	modifiedEntry := DiaryInfo{
-	// 		DiaryID: 1,
-	// 		Title:   "Test Entry",
-	// 		Body:    "Modified body",
-	// 		Shared:  []string{"Riccardo", "Paolo"},
-	// 	}
-	// 	modifiedEntry.DiaryID = int(addedEntry.DID)
-	// 	modifiedEntryJSON, _ := json.Marshal(modifiedEntry)
-	// 	req, _ = http.NewRequest("POST", "/diary", bytes.NewBuffer(modifiedEntryJSON))
-	// 	resp = httptest.NewRecorder()
-	// 	router.ServeHTTP(resp, req)
-	// 	assert.Equal(t, http.StatusOK, resp.Code)
+	testUpdateDiary := []testCase{
+		{"Update Valid Diary", `{"DID" : 1,"Body":"test"}`, http.StatusOK},
+		{"Update Diary with DID 0", `{"DID" : 0, "Body": "test"}`, http.StatusBadRequest},
+	}
+
+	for _, tc := range testUpdateDiary {
+		t.Run(tc.Name, func(t *testing.T) {
+			req := httptest.NewRequest(
+				"POST",
+				"/diary",
+				bytes.NewBufferString(tc.RequestBody),
+			)
+
+			req.AddCookie(jwt)
+			w := httptest.NewRecorder()
+
+			router.ServeHTTP(w, req)
+
+			resp := w.Result()
+
+			if resp.StatusCode != tc.ExpectedCode {
+				t.Errorf("Expected status code %d, got %d", tc.ExpectedCode, resp.StatusCode)
+			}
+		})
+	}
 }
