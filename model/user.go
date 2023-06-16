@@ -17,18 +17,24 @@ type User struct {
 }
 
 func AddUser(db *gorm.DB, c *gin.Context) {
-	var user User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var u User
+	if err := c.ShouldBindJSON(&u); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
 		fmt.Println(err)
 		return
 	}
-	if err := db.Create(&user).Error; err != nil {
+
+	if u.Username == "" || u.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing username or password"})
+		return
+	}
+
+	if err := db.Create(&u).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to create entry"})
 		fmt.Println(err)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, u)
 }
 
 func GetUser(db *gorm.DB, c *gin.Context) {

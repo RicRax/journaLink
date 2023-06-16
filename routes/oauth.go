@@ -81,12 +81,6 @@ func HandleOAuthGoogle(db *gorm.DB, c *gin.Context) {
 		return
 	}
 
-	// create token
-	s := sessions.Default(c)
-	r := auth.RandSeq(10)
-	s.Set("token", r)
-	s.Save()
-
 	// if necessary create user
 	u := model.User{
 		Username: result.Name,
@@ -121,8 +115,8 @@ func HandleOAuthGoogle(db *gorm.DB, c *gin.Context) {
 		return
 	}
 
+	s := sessions.Default(c)
 	s.Set("jwtToken", signedJwt)
-
 	s.Save()
 
 	// link token to userid in sessionsData
