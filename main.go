@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -21,6 +22,10 @@ func main() {
 	r := setupRouter()
 
 	auth.InitRand()
+
+	auth.JwtKey = []byte(os.Getenv("JWT_KEY"))
+
+	auth.CsGoogle = os.Getenv("CS_GOOGLE")
 
 	r.Run(":8080")
 }
@@ -64,7 +69,6 @@ func setupRouter() *gin.Engine {
 
 	// OAuth2 routes
 	r.GET("/oauth", func(c *gin.Context) {
-		// FIX RANDOMSTATES
 		routes.RandomStates = append(routes.RandomStates, auth.RandSeq(10))
 		url := routes.GoogleOauthConfig.AuthCodeURL(routes.RandomStates[len(routes.RandomStates)-1])
 		c.Redirect(http.StatusTemporaryRedirect, url)

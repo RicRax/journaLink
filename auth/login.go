@@ -12,7 +12,7 @@ import (
 	"github.com/RicRax/journalink/model"
 )
 
-var JwtKey = []byte("my_secret_key")
+var JwtKey []byte
 
 type Claims struct {
 	Username string `json:"username"`

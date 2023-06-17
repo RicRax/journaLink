@@ -79,6 +79,10 @@ func GetDiary(db *gorm.DB, c *gin.Context, uid uint) {
 		return
 	}
 
+	if d == nil {
+		c.JSON(http.StatusBadRequest, "diary does not exist")
+	}
+
 	c.JSON(http.StatusOK, d)
 }
 
