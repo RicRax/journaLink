@@ -16,7 +16,7 @@ import (
 	"github.com/RicRax/journalink/routes"
 )
 
-var store = cookie.NewStore([]byte("secret"))
+var store = cookie.NewStore([]byte(os.Getenv("STORE_KEY")))
 
 func main() {
 	r := setupRouter()

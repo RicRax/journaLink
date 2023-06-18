@@ -1,0 +1,5 @@
+ssh
+ssh.pub
+__debug_bin
+/.git
+.gitignore

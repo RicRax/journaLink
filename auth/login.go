@@ -12,7 +12,10 @@ import (
 	"github.com/RicRax/journalink/model"
 )
 
-var JwtKey []byte
+var (
+	JwtKey   []byte
+	CsGoogle string
+)
 
 type Claims struct {
 	Username string `json:"username"`
