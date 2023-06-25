@@ -57,13 +57,18 @@ func TestAddGetUpdateDiary(t *testing.T) {
 	testLogin := []testCase{
 		{"Login Valid user", `{"username" : "test", "password" : "test"}`, http.StatusOK},
 		{
-			"Login Invaliduser",
+			"Login Invalid user",
 			`{"username" : "invalid", "password" : "invalid"}`,
 			http.StatusUnauthorized,
 		},
 		{
 			"Login Missing Password",
 			`{"username" : "test" , "password": ""}`,
+			http.StatusUnauthorized,
+		},
+		{
+			"Login Wrong Password",
+			`{"username : "test" , "password": "wrong"}`,
 			http.StatusUnauthorized,
 		},
 		{"Login Missing username", `{"username" : "", "password":"test"}`, http.StatusUnauthorized},
@@ -91,7 +96,6 @@ func TestAddGetUpdateDiary(t *testing.T) {
 		})
 	}
 
-	// print(jwt)//works
 	// test creating diary
 	testAddDiary := []testCase{
 		{"Add Valid Diary", `{"Title" : "test"}`, http.StatusOK},

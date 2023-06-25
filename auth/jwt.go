@@ -16,6 +16,10 @@ func AuthenticateJwt(c *gin.Context, db *gorm.DB) (uint, error) {
 	s := sessions.Default(c)
 	tkn := s.Get("jwtToken")
 
+	if tkn == nil {
+		c.JSON(http.StatusBadRequest, "could not get authentication cookie")
+	}
+
 	claims := &Claims{}
 	decodedTkn, err := jwt.ParseWithClaims(
 		tkn.(string),
